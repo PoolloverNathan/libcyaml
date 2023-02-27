@@ -25,6 +25,14 @@ jobs:
       run: brew update && brew install libyaml
     - name: build
       run: make VARIANT=${{ matrix.variant }}
+    - name: list build dir (debug)
+      run: ls build
+    - name: upload
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: ${{ github.event.repository.name }}-${{ matrix.os }}-${{ matrix.cc }}-${{ matrix.variant }}
+        path: build/${{ matrix.variant }}/
+        if-no-files-found: error
     - name: test
       run: make VARIANT=${{ matrix.variant }} test
     - name: valgrind test (gcc)
