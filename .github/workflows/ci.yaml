@@ -5,11 +5,12 @@ on:
 jobs:
   ci:
     runs-on: ${{ matrix.os }}-latest
-    name: CI (${{ matrix.cc }} on ${{ matrix.os }})
+    name: CI (${{ matrix.cc }} on ${{ matrix.os }}, ${{ matrix.variant }})
     strategy:
       matrix:
         os: ["ubuntu", "macos"]
         cc: ["gcc", "clang"]
+        variant: ["debug", "release", "san"]
     env:
       CC: ${{ matrix.cc }}
     steps:
@@ -23,15 +24,12 @@ jobs:
       if: matrix.os == 'macos'
       run: brew update && brew install libyaml
     - name: build
-      run: make
+      run: make VARIANT=${{ matrix.variant }}
     - name: test
-      run: make test
+      run: make VARIANT=${{ matrix.variant }} test
     - name: valgrind test (gcc)
       if: matrix.os != 'macos' && matrix.cc == 'gcc'
       run: make valgrind-quiet
     - name: valgrind test (clang)
       if: matrix.os != 'macos' && matrix.cc == 'clang'
       run: CFLAGS=-gdwarf-4 make -B valgrind-quiet
-    - name: sanitize test
-      if: matrix.os != 'macos'
-      run: make VARIANT=san test
